@@ -20,7 +20,7 @@ struct ToggleImmersiveSpaceButton: View {
 
                 case .closed:
                     appModel.immersiveSpaceState = .inTransition
-                    appModel.currentDarkness = .dark
+                    appModel.currentDarkness = .light
                     switch await openImmersiveSpace(id: appModel.immersiveSpaceID) {
                     case .opened:
                         appModel.immersiveSpaceState = .open 

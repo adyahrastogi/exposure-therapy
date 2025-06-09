@@ -6,22 +6,30 @@ struct ImmersiveView: View {
     @Environment(AppModel.self) private var appModel
 
     var body: some View {
-        RealityView { content in
-            let alpha = appModel.currentDarkness.rawValue
-            let clampedAlpha = min(max(alpha, 0.0), 1.0)
-            
-            var immersiveMaterial = SimpleMaterial(color: .black.withAlphaComponent(clampedAlpha), roughness: 1.0, isMetallic: false)
-            immersiveMaterial.faceCulling = .none
+        ZStack {
+            // Switch between experiences based on mode
+            if appModel.currentMode == .orbPlacement {
+                SceneUnderstandingView()
+            } else {
+                // Original darkness experience
+                RealityView { content in
+                    let alpha = appModel.currentDarkness.rawValue
+                    let clampedAlpha = min(max(alpha, 0.0), 1.0)
+                    
+                    var immersiveMaterial = SimpleMaterial(color: .black.withAlphaComponent(clampedAlpha), roughness: 1.0, isMetallic: false)
+                    immersiveMaterial.faceCulling = .none
 
-            let sphereMesh = MeshResource.generateSphere(radius: 0.5)
-            let sphereEntity = ModelEntity(mesh: sphereMesh, materials: [immersiveMaterial])
-            sphereEntity.scale = SIMD3<Float>(x: -100, y: -100, z: -100)
+                    let sphereMesh = MeshResource.generateSphere(radius: 0.5)
+                    let sphereEntity = ModelEntity(mesh: sphereMesh, materials: [immersiveMaterial])
+                    sphereEntity.scale = SIMD3<Float>(x: -100, y: -100, z: -100)
 
-            let headAnchor = AnchorEntity(.head)
-            headAnchor.addChild(sphereEntity)
-            content.add(headAnchor)
+                    let headAnchor = AnchorEntity(.head)
+                    headAnchor.addChild(sphereEntity)
+                    content.add(headAnchor)
+                }
+                .id(appModel.currentDarkness.rawValue)
+            }
         }
-        .id(appModel.currentDarkness.rawValue)
         .onAppear {
             appModel.playWindSound()
         }

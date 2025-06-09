@@ -10,10 +10,11 @@ import AVFoundation
 
 enum DarknessLevel: CGFloat, CaseIterable {
     case off = 0.0
-    case light = 0.8
-    case medium = 0.9
-    case dark = 0.99
+    case light = 0.95
+    case medium = 0.99
+    case dark = 0.995
 }
+
 
 @MainActor
 @Observable
@@ -25,7 +26,7 @@ class AppModel {
         case open
     }
     var immersiveSpaceState = ImmersiveSpaceState.closed
-    var currentDarkness: DarknessLevel = .dark
+    var currentDarkness: DarknessLevel = .light
     var currentAlpha: CGFloat {
         immersiveSpaceState == .open ? currentDarkness.rawValue : 0.0
     }
@@ -33,6 +34,14 @@ class AppModel {
     var windSoundPlayer: AVAudioPlayer?
     var creakingSoundPlayer: AVAudioPlayer?
 
+    enum ExperienceMode {
+        case darkness
+        case orbPlacement
+    }
+
+    // Add this property to your AppModel class
+    var currentMode: ExperienceMode = .darkness
+    
     init() {
         setupAudioPlayers()
     }
