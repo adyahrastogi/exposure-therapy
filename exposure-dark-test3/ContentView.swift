@@ -14,7 +14,7 @@ struct ContentView: View {
         VStack {
             ToggleImmersiveSpaceButton(showImmersiveView: $showImmersiveView)
                 .padding()
-
+    
             Picker("Experience Mode", selection: Binding(
                 get: { self.appModel.currentMode },
                 set: { self.appModel.currentMode = $0 }

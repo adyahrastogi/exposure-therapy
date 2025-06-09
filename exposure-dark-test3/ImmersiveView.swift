@@ -6,10 +6,22 @@ struct ImmersiveView: View {
     @Environment(AppModel.self) private var appModel
 
     var body: some View {
-        ZStack {
+        Group {
+            // Add debug logging to see which path we're taking
+            let _ = print("ImmersiveView: body evaluated, currentMode = \(appModel.currentMode)")
+            
             // Switch between experiences based on mode
             if appModel.currentMode == .orbPlacement {
                 SceneUnderstandingView()
+                    .onAppear {
+                        print("✅ ImmersiveView: Orb Placement mode activated")
+                        print("   - Current mode: \(appModel.currentMode)")
+                        print("   - Immersive space state: \(appModel.immersiveSpaceState)")
+                    }
+                    .onDisappear {
+                        print("❌ ImmersiveView: Orb Placement mode deactivated")
+                        appModel.stopAllImmersiveSounds()
+                    }
             } else {
                 // Original darkness experience
                 RealityView { content in
@@ -28,23 +40,29 @@ struct ImmersiveView: View {
                     content.add(headAnchor)
                 }
                 .id(appModel.currentDarkness.rawValue)
+                .onAppear {
+                    print("🌑 ImmersiveView: Darkness mode activated")
+                    print("   - Current mode: \(appModel.currentMode)")
+                    print("   - Current darkness: \(appModel.currentDarkness)")
+                    appModel.playWindSound()
+                }
+                .onDisappear {
+                    print("❌ ImmersiveView: Darkness mode deactivated")
+                    appModel.stopAllImmersiveSounds()
+                }
+                .onChange(of: appModel.currentDarkness) { _, newDarkness in
+                    if newDarkness == .dark && appModel.immersiveSpaceState == .open {
+                        appModel.playCreakingSound()
+                    }
+                }
             }
         }
         .onAppear {
-            appModel.playWindSound()
+            print("🚀 ImmersiveView: Overall view appeared")
+            print("   - Mode at appearance: \(appModel.currentMode)")
         }
-        .onDisappear {
-            // --- UPDATED TO CALL THE NEW METHOD ---
-            appModel.stopAllImmersiveSounds()
-            
-            // You might still want to update the state here if it's not handled elsewhere
-            // when the view disappears (e.g., if dismissal isn't always via the toggle button)
-            // appModel.immersiveSpaceState = .closed
-        }
-        .onChange(of: appModel.currentDarkness) { _, newDarkness in
-            if newDarkness == .dark && appModel.immersiveSpaceState == .open {
-                appModel.playCreakingSound()
-            }
+        .onChange(of: appModel.currentMode) { oldMode, newMode in
+            print("🔄 ImmersiveView: Mode changed from \(oldMode) to \(newMode)")
         }
     }
 }
